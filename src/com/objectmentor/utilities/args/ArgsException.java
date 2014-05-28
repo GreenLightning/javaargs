@@ -1,21 +1,23 @@
 package com.objectmentor.utilities.args;
 
-import static com.objectmentor.utilities.args.ArgsException.ErrorCode.*;
-
 public class ArgsException extends Exception {
+
+	public static enum ErrorCode {
+		INVALID_ARGUMENT_FORMAT, UNEXPECTED_ARGUMENT, UNKNOWN_ARGUMENT_NAME, INVALID_ARGUMENT_NAME,
+		MISSING_STRING, MISSING_INTEGER, INVALID_INTEGER, MISSING_DOUBLE, INVALID_DOUBLE
+	}
 
 	private char errorArgumentId = '\0';
 	private String errorParameter = null;
-	private ErrorCode errorCode = OK;
-
-	public ArgsException() {}
-
-	public ArgsException(String message) {
-		super(message);
-	}
+	private ErrorCode errorCode;
 
 	public ArgsException(ErrorCode errorCode) {
 		this.errorCode = errorCode;
+	}
+
+	public ArgsException(ErrorCode errorCode, char errorArgumentId) {
+		this.errorCode = errorCode;
+		this.errorArgumentId = errorArgumentId;
 	}
 
 	public ArgsException(ErrorCode errorCode, String errorParameter) {
@@ -53,10 +55,9 @@ public class ArgsException extends Exception {
 		this.errorCode = errorCode;
 	}
 
-	public String errorMessage() {
+	@Override
+	public String getMessage() {
 		switch (errorCode) {
-			case OK:
-				return "TILT: Should not get here.";
 			case UNEXPECTED_ARGUMENT:
 				return String.format("Argument -%c unexpected.", errorArgumentId);
 			case MISSING_STRING:
@@ -75,12 +76,11 @@ public class ArgsException extends Exception {
 				return String.format("'%c' is not a valid argument name.", errorArgumentId);
 			case INVALID_ARGUMENT_FORMAT:
 				return String.format("'%s' is not a valid argument format.", errorParameter);
+			case UNKNOWN_ARGUMENT_NAME:
+				return String.format("Argument '%c' did not appear in schema.", errorArgumentId);
+			default:
+				return "";
 		}
-		return "";
-	}
-
-	public enum ErrorCode {
-		OK, INVALID_ARGUMENT_FORMAT, UNEXPECTED_ARGUMENT, INVALID_ARGUMENT_NAME, MISSING_STRING, MISSING_INTEGER, INVALID_INTEGER, MISSING_DOUBLE, INVALID_DOUBLE
 	}
 
 }

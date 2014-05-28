@@ -48,7 +48,7 @@ public class Args {
 
 	private void validateSchemaElementId(char elementId) throws ArgsException {
 		if (!Character.isLetter(elementId)) {
-			throw new ArgsException(INVALID_ARGUMENT_NAME, elementId, null);
+			throw new ArgsException(INVALID_ARGUMENT_NAME, elementId);
 		}
 	}
 
@@ -73,7 +73,7 @@ public class Args {
 	private void parseArgumentCharacter(char argChar) throws ArgsException {
 		ArgumentMarshaler m = marshalers.get(argChar);
 		if (m == null) {
-			throw new ArgsException(UNEXPECTED_ARGUMENT, argChar, null);
+			throw new ArgsException(UNEXPECTED_ARGUMENT, argChar);
 		} else {
 			argsFound.add(argChar);
 			try {
@@ -85,7 +85,8 @@ public class Args {
 		}
 	}
 
-	public boolean found(char arg) {
+	public boolean found(char arg) throws ArgsException {
+		validateArgumentId(arg);
 		return argsFound.contains(arg);
 	}
 
@@ -93,24 +94,35 @@ public class Args {
 		return argsIterator.nextIndex();
 	}
 
-	public boolean getBoolean(char arg) {
+	public boolean getBoolean(char arg) throws ArgsException {
+		validateArgumentId(arg);
 		return BooleanArgumentMarshaler.getValue(marshalers.get(arg));
 	}
 
-	public String getString(char arg) {
+	public String getString(char arg) throws ArgsException {
+		validateArgumentId(arg);
 		return StringArgumentMarshaler.getValue(marshalers.get(arg));
 	}
 
-	public int getInt(char arg) {
+	public int getInt(char arg) throws ArgsException {
+		validateArgumentId(arg);
 		return IntegerArgumentMarshaler.getValue(marshalers.get(arg));
 	}
 
-	public double getDouble(char arg) {
+	public double getDouble(char arg) throws ArgsException {
+		validateArgumentId(arg);
 		return DoubleArgumentMarshaler.getValue(marshalers.get(arg));
 	}
 
-	public String[] getStringArray(char arg) {
+	public String[] getStringArray(char arg) throws ArgsException {
+		validateArgumentId(arg);
 		return StringArrayArgumentMarshaler.getValue(marshalers.get(arg));
+	}
+
+	private void validateArgumentId(char arg) throws ArgsException {
+		if (!marshalers.containsKey(arg)) {
+			throw new ArgsException(UNKNOWN_ARGUMENT_NAME, arg);
+		}
 	}
 
 }

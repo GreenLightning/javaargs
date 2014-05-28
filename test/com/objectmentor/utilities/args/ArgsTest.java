@@ -59,7 +59,7 @@ public class ArgsTest {
 	}
 
 	@Test
-	public void spacesInFormat() throws ArgsException {
+	public void spacesInSchema() throws ArgsException {
 		Args args = new Args("x, y", new String[] { "-xy" });
 		assertThat(args.found('x'), is(true));
 		assertThat(args.found('y'), is(true));
@@ -67,12 +67,25 @@ public class ArgsTest {
 	}
 
 	@Test
-	public void emptySlotsInFormat() throws ArgsException {
+	public void emptySlotsInSchema() throws ArgsException {
 		Args args = new Args("x, ,y", new String[] { "-xy" });
 		assertThat(args.found('x'), is(true));
 		assertThat(args.found('y'), is(true));
 		assertThat(args.extraArgumentsIndex(), is(1));
 	}
+
+	@Test
+	public void foundValidatesArgumentId() {
+		try {
+			Args args = new Args("x", new String[0]);
+			args.found('y');
+			fail("Args constructor should have thrown exception.");
+		} catch (ArgsException e) {
+			assertThat(e.getErrorCode(), is(UNKNOWN_ARGUMENT_NAME));
+			assertThat(e.getErrorArgumentId(), is('y'));
+		}
+	}
+
 	@Test
 	public void simpleBooleanPresent() throws ArgsException {
 		Args args = new Args("x", new String[] { "-x" });
