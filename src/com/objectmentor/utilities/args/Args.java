@@ -5,104 +5,108 @@ import static com.objectmentor.utilities.args.ArgsException.ErrorCode.*;
 import java.util.*;
 
 public class Args {
-  private Map<Character, ArgumentMarshaler> marshalers;
-  private Set<Character> argsFound;
-  private ListIterator<String> currentArgument;
 
-  public Args(String schema, String[] args) throws ArgsException {
-    marshalers = new HashMap<Character, ArgumentMarshaler>();
-    argsFound = new HashSet<Character>();
+	private Map<Character, ArgumentMarshaler> marshalers;
+	private Set<Character> argsFound;
+	private ListIterator<String> currentArgument;
 
-    parseSchema(schema);
-    parseArgumentStrings(Arrays.asList(args));
-  }
+	public Args(String schema, String[] args) throws ArgsException {
+		marshalers = new HashMap<Character, ArgumentMarshaler>();
+		argsFound = new HashSet<Character>();
 
-  private void parseSchema(String schema) throws ArgsException {
-    for (String element : schema.split(","))
-      if (element.length() > 0)
-        parseSchemaElement(element.trim());
-  }
+		parseSchema(schema);
+		parseArguments(Arrays.asList(args));
+	}
 
-  private void parseSchemaElement(String element) throws ArgsException {
-    char elementId = element.charAt(0);
-    String elementTail = element.substring(1);
-    validateSchemaElementId(elementId);
-    if (elementTail.length() == 0)
-      marshalers.put(elementId, new BooleanArgumentMarshaler());
-    else if (elementTail.equals("*"))
-      marshalers.put(elementId, new StringArgumentMarshaler());
-    else if (elementTail.equals("#"))
-      marshalers.put(elementId, new IntegerArgumentMarshaler());
-    else if (elementTail.equals("##"))
-      marshalers.put(elementId, new DoubleArgumentMarshaler());
-    else if (elementTail.equals("[*]"))
-      marshalers.put(elementId, new StringArrayArgumentMarshaler());
-    else
-      throw new ArgsException(INVALID_ARGUMENT_FORMAT, elementId, elementTail);
-  }
+	private void parseSchema(String schema) throws ArgsException {
+		for (String element : schema.split(",")) {
+			element = element.trim();
+			if (element.length() > 0) {
+				parseSchemaElement(element);
+			}
+		}
+	}
 
-  private void validateSchemaElementId(char elementId) throws ArgsException {
-    if (!Character.isLetter(elementId))
-      throw new ArgsException(INVALID_ARGUMENT_NAME, elementId, null);
-  }
+	private void parseSchemaElement(String element) throws ArgsException {
+		char elementId = element.charAt(0);
+		String elementTail = element.substring(1);
+		validateSchemaElementId(elementId);
+		if (elementTail.length() == 0)
+			marshalers.put(elementId, new BooleanArgumentMarshaler());
+		else if (elementTail.equals("*"))
+			marshalers.put(elementId, new StringArgumentMarshaler());
+		else if (elementTail.equals("#"))
+			marshalers.put(elementId, new IntegerArgumentMarshaler());
+		else if (elementTail.equals("##"))
+			marshalers.put(elementId, new DoubleArgumentMarshaler());
+		else if (elementTail.equals("[*]"))
+			marshalers.put(elementId, new StringArrayArgumentMarshaler());
+		else
+			throw new ArgsException(INVALID_ARGUMENT_FORMAT, elementId, elementTail);
+	}
 
-  private void parseArgumentStrings(List<String> argsList) throws ArgsException {
-    for (currentArgument = argsList.listIterator(); currentArgument.hasNext();) {
-      String argString = currentArgument.next();
-      if (argString.startsWith("-")) {
-        parseArgumentCharacters(argString.substring(1));
-      } else {
-        currentArgument.previous();
-        break;
-      }
-    }
-  }
+	private void validateSchemaElementId(char elementId) throws ArgsException {
+		if (!Character.isLetter(elementId))
+			throw new ArgsException(INVALID_ARGUMENT_NAME, elementId, null);
+	}
 
-  private void parseArgumentCharacters(String argChars) throws ArgsException {
-    for (int i = 0; i < argChars.length(); i++)
-      parseArgumentCharacter(argChars.charAt(i));
-  }
+	private void parseArguments(List<String> argsList) throws ArgsException {
+		for (currentArgument = argsList.listIterator(); currentArgument.hasNext();) {
+			String argString = currentArgument.next();
+			if (argString.startsWith("-")) {
+				parseArgumentCharacters(argString.substring(1));
+			} else {
+				currentArgument.previous();
+				break;
+			}
+		}
+	}
 
-  private void parseArgumentCharacter(char argChar) throws ArgsException {
-    ArgumentMarshaler m = marshalers.get(argChar);
-    if (m == null) {
-      throw new ArgsException(UNEXPECTED_ARGUMENT, argChar, null);
-    } else {
-      argsFound.add(argChar);
-      try {
-        m.set(currentArgument);
-      } catch (ArgsException e) {
-        e.setErrorArgumentId(argChar);
-        throw e;
-      }
-    }
-  }
+	private void parseArgumentCharacters(String argChars) throws ArgsException {
+		for (int i = 0; i < argChars.length(); i++)
+			parseArgumentCharacter(argChars.charAt(i));
+	}
 
-  public boolean has(char arg) {
-    return argsFound.contains(arg);
-  }
+	private void parseArgumentCharacter(char argChar) throws ArgsException {
+		ArgumentMarshaler m = marshalers.get(argChar);
+		if (m == null) {
+			throw new ArgsException(UNEXPECTED_ARGUMENT, argChar, null);
+		} else {
+			argsFound.add(argChar);
+			try {
+				m.set(currentArgument);
+			} catch (ArgsException e) {
+				e.setErrorArgumentId(argChar);
+				throw e;
+			}
+		}
+	}
 
-  public int nextArgument() {
-    return currentArgument.nextIndex();
-  }
+	public boolean has(char arg) {
+		return argsFound.contains(arg);
+	}
 
-  public boolean getBoolean(char arg) {
-    return BooleanArgumentMarshaler.getValue(marshalers.get(arg));
-  }
+	public int nextArgument() {
+		return currentArgument.nextIndex();
+	}
 
-  public String getString(char arg) {
-    return StringArgumentMarshaler.getValue(marshalers.get(arg));
-  }
+	public boolean getBoolean(char arg) {
+		return BooleanArgumentMarshaler.getValue(marshalers.get(arg));
+	}
 
-  public int getInt(char arg) {
-    return IntegerArgumentMarshaler.getValue(marshalers.get(arg));
-  }
+	public String getString(char arg) {
+		return StringArgumentMarshaler.getValue(marshalers.get(arg));
+	}
 
-  public double getDouble(char arg) {
-    return DoubleArgumentMarshaler.getValue(marshalers.get(arg));
-  }
+	public int getInt(char arg) {
+		return IntegerArgumentMarshaler.getValue(marshalers.get(arg));
+	}
 
-  public String[] getStringArray(char arg) {
-    return StringArrayArgumentMarshaler.getValue(marshalers.get(arg));
-  }
+	public double getDouble(char arg) {
+		return DoubleArgumentMarshaler.getValue(marshalers.get(arg));
+	}
+
+	public String[] getStringArray(char arg) {
+		return StringArrayArgumentMarshaler.getValue(marshalers.get(arg));
+	}
 }

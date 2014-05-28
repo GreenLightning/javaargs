@@ -67,6 +67,13 @@ public class ArgsTest {
 	}
 
 	@Test
+	public void emptySlotsInFormat() throws ArgsException {
+		Args args = new Args("x, ,y", new String[] { "-xy" });
+		assertThat(args.has('x'), is(true));
+		assertThat(args.has('y'), is(true));
+		assertThat(args.nextArgument(), is(1));
+	}
+	@Test
 	public void simpleBooleanPresent() throws ArgsException {
 		Args args = new Args("x", new String[] { "-x" });
 		assertThat(args.getBoolean('x'), is(true));
