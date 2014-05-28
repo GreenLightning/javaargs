@@ -94,6 +94,18 @@ public class ArgsTest {
 	}
 
 	@Test
+	public void getBooleanValidatesArgumentType() {
+		try {
+			Args args = new Args("x#", new String[0]);
+			args.getBoolean('x');
+			fail("Args constructor should have thrown exception.");
+		} catch (ArgsException e) {
+			assertThat(e.getErrorCode(), is(WRONG_ARGUMENT_TYPE));
+			assertThat(e.getErrorArgumentId(), is('x'));
+		}
+	}
+
+	@Test
 	public void simpleIntPresent() throws ArgsException {
 		Args args = new Args("x#", new String[] { "-x", "42" });
 		assertThat(args.found('x'), is(true));

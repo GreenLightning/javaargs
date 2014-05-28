@@ -3,13 +3,14 @@ package com.objectmentor.utilities.args;
 public class ArgsException extends Exception {
 
 	public static enum ErrorCode {
-		INVALID_ARGUMENT_FORMAT, UNEXPECTED_ARGUMENT, UNKNOWN_ARGUMENT_NAME, INVALID_ARGUMENT_NAME,
-		MISSING_STRING, MISSING_INTEGER, INVALID_INTEGER, MISSING_DOUBLE, INVALID_DOUBLE
+		INVALID_ARGUMENT_FORMAT, UNEXPECTED_ARGUMENT, WRONG_ARGUMENT_TYPE, UNKNOWN_ARGUMENT_NAME,
+		INVALID_ARGUMENT_NAME, MISSING_STRING, MISSING_INTEGER, INVALID_INTEGER, MISSING_DOUBLE,
+		INVALID_DOUBLE
 	}
 
+	private ErrorCode errorCode;
 	private char errorArgumentId = '\0';
 	private String errorParameter = null;
-	private ErrorCode errorCode;
 
 	public ArgsException(ErrorCode errorCode) {
 		this.errorCode = errorCode;
@@ -63,13 +64,13 @@ public class ArgsException extends Exception {
 			case MISSING_STRING:
 				return String.format("Could not find string parameter for -%c.", errorArgumentId);
 			case INVALID_INTEGER:
-				return String.format("Argument -%c expects an integer but was '%s'.",
-					errorArgumentId, errorParameter);
+				return String.format("Argument -%c expects an integer but was '%s'.", errorArgumentId,
+					errorParameter);
 			case MISSING_INTEGER:
 				return String.format("Could not find integer parameter for -%c.", errorArgumentId);
 			case INVALID_DOUBLE:
-				return String.format("Argument -%c expects a double but was '%s'.",
-					errorArgumentId, errorParameter);
+				return String.format("Argument -%c expects a double but was '%s'.", errorArgumentId,
+					errorParameter);
 			case MISSING_DOUBLE:
 				return String.format("Could not find double parameter for -%c.", errorArgumentId);
 			case INVALID_ARGUMENT_NAME:
@@ -78,6 +79,8 @@ public class ArgsException extends Exception {
 				return String.format("'%s' is not a valid argument format.", errorParameter);
 			case UNKNOWN_ARGUMENT_NAME:
 				return String.format("Argument '%c' did not appear in schema.", errorArgumentId);
+			case WRONG_ARGUMENT_TYPE:
+				return String.format("Argument '%c' is not of the requested type.", errorArgumentId);
 			default:
 				return "";
 		}

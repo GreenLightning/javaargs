@@ -23,8 +23,7 @@ public class ArgsExceptionTest {
 	@Test
 	public void invalidInteger() {
 		ArgsException e = new ArgsException(INVALID_INTEGER, 'x', "Forty two");
-		assertThat(e.getMessage(),
-			is(equalTo("Argument -x expects an integer but was 'Forty two'.")));
+		assertThat(e.getMessage(), is(equalTo("Argument -x expects an integer but was 'Forty two'.")));
 	}
 
 	@Test
@@ -36,8 +35,7 @@ public class ArgsExceptionTest {
 	@Test
 	public void invalidDouble() {
 		ArgsException e = new ArgsException(INVALID_DOUBLE, 'x', "Forty two");
-		assertThat(e.getMessage(),
-			is(equalTo("Argument -x expects a double but was 'Forty two'.")));
+		assertThat(e.getMessage(), is(equalTo("Argument -x expects a double but was 'Forty two'.")));
 	}
 
 	@Test
@@ -60,8 +58,14 @@ public class ArgsExceptionTest {
 
 	@Test
 	public void unknownArgumentName() {
-		ArgsException e = new ArgsException(UNKNOWN_ARGUMENT_NAME, 'y');
-		assertThat(e.getMessage(), is(equalTo("Argument 'y' did not appear in schema.")));
+		ArgsException e = new ArgsException(UNKNOWN_ARGUMENT_NAME, 'x');
+		assertThat(e.getMessage(), is(equalTo("Argument 'x' did not appear in schema.")));
+	}
+
+	@Test
+	public void wrongArgumentType() {
+		ArgsException e = new ArgsException(WRONG_ARGUMENT_TYPE, 'x');
+		assertThat(e.getMessage(), is(equalTo("Argument 'x' is not of the requested type.")));
 	}
 
 }

@@ -95,34 +95,44 @@ public class Args {
 	}
 
 	public boolean getBoolean(char arg) throws ArgsException {
-		validateArgumentId(arg);
-		return BooleanArgumentMarshaler.getValue(marshalers.get(arg));
+		ArgumentMarshaler marshaler = getAndValidateMarshaler(arg, BooleanArgumentMarshaler.class);
+		return BooleanArgumentMarshaler.getValue(marshaler);
 	}
 
 	public String getString(char arg) throws ArgsException {
-		validateArgumentId(arg);
-		return StringArgumentMarshaler.getValue(marshalers.get(arg));
+		ArgumentMarshaler marshaler = getAndValidateMarshaler(arg, StringArgumentMarshaler.class);
+		return StringArgumentMarshaler.getValue(marshaler);
 	}
 
 	public int getInt(char arg) throws ArgsException {
-		validateArgumentId(arg);
-		return IntegerArgumentMarshaler.getValue(marshalers.get(arg));
+		ArgumentMarshaler marshaler = getAndValidateMarshaler(arg, IntegerArgumentMarshaler.class);
+		return IntegerArgumentMarshaler.getValue(marshaler);
 	}
 
 	public double getDouble(char arg) throws ArgsException {
-		validateArgumentId(arg);
-		return DoubleArgumentMarshaler.getValue(marshalers.get(arg));
+		ArgumentMarshaler marshaler = getAndValidateMarshaler(arg, DoubleArgumentMarshaler.class);
+		return DoubleArgumentMarshaler.getValue(marshaler);
 	}
 
 	public String[] getStringArray(char arg) throws ArgsException {
-		validateArgumentId(arg);
-		return StringArrayArgumentMarshaler.getValue(marshalers.get(arg));
+		ArgumentMarshaler marshaler = getAndValidateMarshaler(arg, StringArrayArgumentMarshaler.class);
+		return StringArrayArgumentMarshaler.getValue(marshaler);
 	}
 
 	private void validateArgumentId(char arg) throws ArgsException {
 		if (!marshalers.containsKey(arg)) {
 			throw new ArgsException(UNKNOWN_ARGUMENT_NAME, arg);
 		}
+	}
+
+	private ArgumentMarshaler getAndValidateMarshaler(char arg, Class<? extends ArgumentMarshaler> clazz)
+		throws ArgsException {
+		validateArgumentId(arg);
+		ArgumentMarshaler marshaler = marshalers.get(arg);
+		if (!clazz.isInstance(marshaler)) {
+			throw new ArgsException(WRONG_ARGUMENT_TYPE, arg);
+		}
+		return marshaler;
 	}
 
 }
