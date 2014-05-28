@@ -8,7 +8,7 @@ public class Args {
 
 	private Map<Character, ArgumentMarshaler> marshalers;
 	private Set<Character> argsFound;
-	private ListIterator<String> currentArgument;
+	private ListIterator<String> argsIterator;
 
 	public Args(String schema, String[] args) throws ArgsException {
 		marshalers = new HashMap<Character, ArgumentMarshaler>();
@@ -53,12 +53,12 @@ public class Args {
 	}
 
 	private void parseArguments(List<String> argsList) throws ArgsException {
-		for (currentArgument = argsList.listIterator(); currentArgument.hasNext();) {
-			String argString = currentArgument.next();
+		for (argsIterator = argsList.listIterator(); argsIterator.hasNext();) {
+			String argString = argsIterator.next();
 			if (argString.startsWith("-")) {
 				parseArgumentCharacters(argString.substring(1));
 			} else {
-				currentArgument.previous();
+				argsIterator.previous();
 				break;
 			}
 		}
@@ -77,7 +77,7 @@ public class Args {
 		} else {
 			argsFound.add(argChar);
 			try {
-				m.set(currentArgument);
+				m.set(argsIterator);
 			} catch (ArgsException e) {
 				e.setErrorArgumentId(argChar);
 				throw e;
@@ -85,12 +85,12 @@ public class Args {
 		}
 	}
 
-	public boolean has(char arg) {
+	public boolean found(char arg) {
 		return argsFound.contains(arg);
 	}
 
-	public int nextArgument() {
-		return currentArgument.nextIndex();
+	public int extraArgumentsIndex() {
+		return argsIterator.nextIndex();
 	}
 
 	public boolean getBoolean(char arg) {
