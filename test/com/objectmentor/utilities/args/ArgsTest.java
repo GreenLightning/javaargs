@@ -1,173 +1,194 @@
 package com.objectmentor.utilities.args;
 
 import static com.objectmentor.utilities.args.ArgsException.ErrorCode.*;
-import junit.framework.TestCase;
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.*;
 
-public class ArgsTest extends TestCase {
-  public void testCreateWithNoSchemaOrArguments() throws Exception {
-    Args args = new Args("", new String[0]);
-    assertEquals(0, args.nextArgument());
-  }
+import org.junit.Test;
 
+public class ArgsTest {
 
-  public void testWithNoSchemaButWithOneArgument() throws Exception {
-    try {
-      new Args("", new String[]{"-x"});
-      fail();
-    } catch (ArgsException e) {
-      assertEquals(UNEXPECTED_ARGUMENT, e.getErrorCode());
-      assertEquals('x', e.getErrorArgumentId());
-    }
-  }
+	@Test
+	public void noSchemaOrArguments() throws ArgsException {
+		Args args = new Args("", new String[0]);
+		assertThat(args.nextArgument(), is(0));
+	}
 
-  public void testWithNoSchemaButWithMultipleArguments() throws Exception {
-    try {
-      new Args("", new String[]{"-x", "-y"});
-      fail();
-    } catch (ArgsException e) {
-      assertEquals(UNEXPECTED_ARGUMENT, e.getErrorCode());
-      assertEquals('x', e.getErrorArgumentId());
-    }
+	@Test
+	public void noSchemaButOneArgument() {
+		try {
+			new Args("", new String[] { "-x" });
+			fail("Args constructor should have thrown exception.");
+		} catch (ArgsException e) {
+			assertThat(e.getErrorCode(), is(UNEXPECTED_ARGUMENT));
+			assertThat(e.getErrorArgumentId(), is('x'));
+		}
+	}
 
-  }
+	@Test
+	public void noSchemaButMultipleArguments() {
+		try {
+			new Args("", new String[] { "-x", "-y" });
+			fail("Args constructor should have thrown exception.");
+		} catch (ArgsException e) {
+			assertThat(e.getErrorCode(), is(UNEXPECTED_ARGUMENT));
+			assertThat(e.getErrorArgumentId(), is('x'));
+		}
+	}
 
-  public void testNonLetterSchema() throws Exception {
-    try {
-      new Args("*", new String[]{});
-      fail("Args constructor should have thrown exception");
-    } catch (ArgsException e) {
-      assertEquals(INVALID_ARGUMENT_NAME, e.getErrorCode());
-      assertEquals('*', e.getErrorArgumentId());
-    }
-  }
+	@Test
+	public void nonLetterSchema() {
+		try {
+			new Args("*", new String[] {});
+			fail("Args constructor should have thrown exception.");
+		} catch (ArgsException e) {
+			assertThat(e.getErrorCode(), is(INVALID_ARGUMENT_NAME));
+			assertThat(e.getErrorArgumentId(), is('*'));
+		}
+	}
 
-  public void testInvalidArgumentFormat() throws Exception {
-    try {
-      new Args("f~", new String[]{});
-      fail("Args constructor should have throws exception");
-    } catch (ArgsException e) {
-      assertEquals(INVALID_ARGUMENT_FORMAT, e.getErrorCode());
-      assertEquals('f', e.getErrorArgumentId());
-    }
-  }
+	@Test
+	public void invalidArgumentFormat() {
+		try {
+			new Args("f~", new String[] {});
+			fail("Args constructor should have thrown exception.");
+		} catch (ArgsException e) {
+			assertThat(e.getErrorCode(), is(INVALID_ARGUMENT_FORMAT));
+			assertThat(e.getErrorArgumentId(), is('f'));
+		}
+	}
 
-  public void testSimpleBooleanPresent() throws Exception {
-    Args args = new Args("x", new String[]{"-x"});
-    assertEquals(true, args.getBoolean('x'));
-    assertEquals(1, args.nextArgument());
-  }
+	@Test
+	public void spacesInFormat() throws ArgsException {
+		Args args = new Args("x, y", new String[] { "-xy" });
+		assertThat(args.has('x'), is(true));
+		assertThat(args.has('y'), is(true));
+		assertThat(args.nextArgument(), is(1));
+	}
 
-  public void testSimpleStringPresent() throws Exception {
-    Args args = new Args("x*", new String[]{"-x", "param"});
-    assertTrue(args.has('x'));
-    assertEquals("param", args.getString('x'));
-    assertEquals(2, args.nextArgument());
-  }
+	@Test
+	public void simpleBooleanPresent() throws ArgsException {
+		Args args = new Args("x", new String[] { "-x" });
+		assertThat(args.getBoolean('x'), is(true));
+		assertThat(args.nextArgument(), is(1));
+	}
 
-  public void testMissingStringArgument() throws Exception {
-    try {
-      new Args("x*", new String[]{"-x"});
-      fail();
-    } catch (ArgsException e) {
-      assertEquals(MISSING_STRING, e.getErrorCode());
-      assertEquals('x', e.getErrorArgumentId());
-    }
-  }
+	@Test
+	public void simpleIntPresent() throws ArgsException {
+		Args args = new Args("x#", new String[] { "-x", "42" });
+		assertThat(args.has('x'), is(true));
+		assertThat(args.getInt('x'), is(42));
+		assertThat(args.nextArgument(), is(2));
+	}
 
-  public void testSpacesInFormat() throws Exception {
-    Args args = new Args("x, y", new String[]{"-xy"});
-    assertTrue(args.has('x'));
-    assertTrue(args.has('y'));
-    assertEquals(1, args.nextArgument());
-  }
+	@Test
+	public void invalidInteger() {
+		try {
+			new Args("x#", new String[] { "-x", "Forty two" });
+			fail("Args constructor should have thrown exception.");
+		} catch (ArgsException e) {
+			assertThat(e.getErrorCode(), is(INVALID_INTEGER));
+			assertThat(e.getErrorArgumentId(), is('x'));
+			assertThat(e.getErrorParameter(), is(equalTo("Forty two")));
+		}
+	}
 
-  public void testSimpleIntPresent() throws Exception {
-    Args args = new Args("x#", new String[]{"-x", "42"});
-    assertTrue(args.has('x'));
-    assertEquals(42, args.getInt('x'));
-    assertEquals(2, args.nextArgument());
-  }
+	@Test
+	public void missingInteger() {
+		try {
+			new Args("x#", new String[] { "-x" });
+			fail("Args constructor should have thrown exception.");
+		} catch (ArgsException e) {
+			assertThat(e.getErrorCode(), is(MISSING_INTEGER));
+			assertThat(e.getErrorArgumentId(), is('x'));
+		}
+	}
 
-  public void testInvalidInteger() throws Exception {
-    try {
-      new Args("x#", new String[]{"-x", "Forty two"});
-      fail();
-    } catch (ArgsException e) {
-      assertEquals(INVALID_INTEGER, e.getErrorCode());
-      assertEquals('x', e.getErrorArgumentId());
-      assertEquals("Forty two", e.getErrorParameter());
-    }
+	@Test
+	public void simpleDoublePresent() throws ArgsException {
+		Args args = new Args("x##", new String[] { "-x", "42.3" });
+		assertThat(args.has('x'), is(true));
+		assertThat(args.getDouble('x'), is(42.3));
+	}
 
-  }
+	@Test
+	public void invalidDouble() {
+		try {
+			new Args("x##", new String[] { "-x", "Forty two" });
+			fail("Args constructor should have thrown exception.");
+		} catch (ArgsException e) {
+			assertThat(e.getErrorCode(), is(INVALID_DOUBLE));
+			assertThat(e.getErrorArgumentId(), is('x'));
+			assertThat(e.getErrorParameter(), is(equalTo("Forty two")));
+		}
+	}
 
-  public void testMissingInteger() throws Exception {
-    try {
-      new Args("x#", new String[]{"-x"});
-      fail();
-    } catch (ArgsException e) {
-      assertEquals(MISSING_INTEGER, e.getErrorCode());
-      assertEquals('x', e.getErrorArgumentId());
-    }
-  }
+	@Test
+	public void missingDouble() {
+		try {
+			new Args("x##", new String[] { "-x" });
+			fail("Args constructor should have thrown exception.");
+		} catch (ArgsException e) {
+			assertThat(e.getErrorCode(), is(MISSING_DOUBLE));
+			assertThat(e.getErrorArgumentId(), is('x'));
+		}
+	}
 
-  public void testSimpleDoublePresent() throws Exception {
-    Args args = new Args("x##", new String[]{"-x", "42.3"});
-    assertTrue(args.has('x'));
-    assertEquals(42.3, args.getDouble('x'), .001);
-  }
+	@Test
+	public void simpleStringPresent() throws ArgsException {
+		Args args = new Args("x*", new String[] { "-x", "param" });
+		assertThat(args.has('x'), is(true));
+		assertThat(args.getString('x'), is(equalTo("param")));
+		assertThat(args.nextArgument(), is(2));
+	}
 
-  public void testInvalidDouble() throws Exception {
-    try {
-      new Args("x##", new String[]{"-x", "Forty two"});
-      fail();
-    } catch (ArgsException e) {
-      assertEquals(INVALID_DOUBLE, e.getErrorCode());
-      assertEquals('x', e.getErrorArgumentId());
-      assertEquals("Forty two", e.getErrorParameter());
-    }
-  }
+	@Test
+	public void missingString() {
+		try {
+			new Args("x*", new String[] { "-x" });
+			fail("Args constructor should have thrown exception.");
+		} catch (ArgsException e) {
+			assertThat(e.getErrorCode(), is(MISSING_STRING));
+			assertThat(e.getErrorArgumentId(), is('x'));
+		}
+	}
 
-  public void testMissingDouble() throws Exception {
-    try {
-      new Args("x##", new String[]{"-x"});
-      fail();
-    } catch (ArgsException e) {
-      assertEquals(MISSING_DOUBLE, e.getErrorCode());
-      assertEquals('x', e.getErrorArgumentId());
-    }
-  }
+	@Test
+	public void simpleStringArrayPresent() throws ArgsException {
+		Args args = new Args("x[*]", new String[] { "-x", "alpha" });
+		assertThat(args.has('x'), is(true));
+		String[] result = args.getStringArray('x');
+		assertThat(result.length, is(1));
+		assertThat(result[0], is(equalTo("alpha")));
+	}
 
-  public void testStringArray() throws Exception {
-    Args args = new Args("x[*]", new String[]{"-x", "alpha"});
-    assertTrue(args.has('x'));
-    String[] result = args.getStringArray('x');
-    assertEquals(1, result.length);
-    assertEquals("alpha", result[0]);
-  }
+	@Test
+	public void missingStringArrayElement() {
+		try {
+			new Args("x[*]", new String[] { "-x" });
+			fail("Args constructor should have thrown exception.");
+		} catch (ArgsException e) {
+			assertThat(e.getErrorCode(), is(MISSING_STRING));
+			assertThat(e.getErrorArgumentId(), is('x'));
+		}
+	}
 
-  public void testMissingStringArrayElement() throws Exception {
-    try {
-      new Args("x[*]", new String[] {"-x"});
-      fail();
-    } catch (ArgsException e) {
-      assertEquals(MISSING_STRING,e.getErrorCode());
-      assertEquals('x', e.getErrorArgumentId());
-    }
-  }
+	@Test
+	public void extraArguments() throws ArgsException {
+		Args args = new Args("x,y*", new String[] { "-x", "-y", "alpha", "beta" });
+		assertThat(args.getBoolean('x'), is(true));
+		assertThat(args.getString('y'), is(equalTo("alpha")));
+		assertThat(args.nextArgument(), is(3));
+	}
 
-  public void testExtraArguments() throws Exception {
-    Args args = new Args("x,y*", new String[]{"-x", "-y", "alpha", "beta"});
-    assertTrue(args.getBoolean('x'));
-    assertEquals("alpha", args.getString('y'));
-    assertEquals(3, args.nextArgument());
-  }
+	@Test
+	public void extraArgumentsThatLookLikeFlags() throws ArgsException {
+		Args args = new Args("x,y", new String[] { "-x", "alpha", "-y", "beta" });
+		assertThat(args.has('x'), is(true));
+		assertThat(args.has('y'), is(false));
+		assertThat(args.getBoolean('x'), is(true));
+		assertThat(args.getBoolean('y'), is(false));
+		assertThat(args.nextArgument(), is(1));
+	}
 
-  public void testExtraArgumentsThatLookLikeFlags() throws Exception {
-    Args args = new Args("x,y", new String[]{"-x", "alpha", "-y", "beta"});
-    assertTrue(args.has('x'));
-    assertFalse(args.has('y'));
-    assertTrue(args.getBoolean('x'));
-    assertFalse(args.getBoolean('y'));
-    assertEquals(1, args.nextArgument());
-  }
 }
