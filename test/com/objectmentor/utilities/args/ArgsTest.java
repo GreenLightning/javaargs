@@ -79,7 +79,7 @@ public class ArgsTest {
 		try {
 			Args args = new Args("x", new String[0]);
 			args.found('y');
-			fail("Args constructor should have thrown exception.");
+			fail("found() should have thrown exception.");
 		} catch (ArgsException e) {
 			assertThat(e.getErrorCode(), is(UNKNOWN_ARGUMENT_NAME));
 			assertThat(e.getErrorArgumentId(), is('y'));
@@ -98,7 +98,7 @@ public class ArgsTest {
 		try {
 			Args args = new Args("x#", new String[0]);
 			args.getBoolean('x');
-			fail("Args constructor should have thrown exception.");
+			fail("getBoolean() should have thrown exception.");
 		} catch (ArgsException e) {
 			assertThat(e.getErrorCode(), is(WRONG_ARGUMENT_TYPE));
 			assertThat(e.getErrorArgumentId(), is('x'));
@@ -137,6 +137,18 @@ public class ArgsTest {
 	}
 
 	@Test
+	public void getIntOrDefaultReturnsValue() throws ArgsException {
+		Args args = new Args("x#", new String[] { "-x", "42" });
+		assertThat(args.getIntOrDefault('x', 21), is(42));
+	}
+
+	@Test
+	public void getIntOrDefaultReturnsDefault() throws ArgsException {
+		Args args = new Args("x#", new String[0]);
+		assertThat(args.getIntOrDefault('x', 21), is(21));
+	}
+
+	@Test
 	public void simpleDoublePresent() throws ArgsException {
 		Args args = new Args("x##", new String[] { "-x", "42.3" });
 		assertThat(args.found('x'), is(true));
@@ -167,6 +179,18 @@ public class ArgsTest {
 	}
 
 	@Test
+	public void getDoubleOrDefaultReturnsValue() throws ArgsException {
+		Args args = new Args("x##", new String[] { "-x", "42" });
+		assertThat(args.getDoubleOrDefault('x', 21), is(42.0));
+	}
+
+	@Test
+	public void getDoubleOrDefaultReturnsDefault() throws ArgsException {
+		Args args = new Args("x##", new String[0]);
+		assertThat(args.getDoubleOrDefault('x', 21), is(21.0));
+	}
+
+	@Test
 	public void simpleStringPresent() throws ArgsException {
 		Args args = new Args("x*", new String[] { "-x", "param" });
 		assertThat(args.found('x'), is(true));
@@ -183,6 +207,18 @@ public class ArgsTest {
 			assertThat(e.getErrorCode(), is(MISSING_STRING));
 			assertThat(e.getErrorArgumentId(), is('x'));
 		}
+	}
+
+	@Test
+	public void getStringOrDefaultReturnsValue() throws ArgsException {
+		Args args = new Args("x*", new String[] { "-x", "Fourty Two" });
+		assertThat(args.getStringOrDefault('x', "Twenty One"), is(equalTo("Fourty Two")));
+	}
+
+	@Test
+	public void getStringOrDefaultReturnsDefault() throws ArgsException {
+		Args args = new Args("x*", new String[0]);
+		assertThat(args.getStringOrDefault('x', "Twenty One"), is(equalTo("Twenty One")));
 	}
 
 	@Test

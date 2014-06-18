@@ -104,14 +104,41 @@ public class Args {
 		return StringArgumentMarshaler.getValue(marshaler);
 	}
 
+	public String getStringOrDefault(char arg, String defaultValue) throws ArgsException {
+		ArgumentMarshaler marshaler = getAndValidateMarshaler(arg, StringArgumentMarshaler.class);
+		if (found(arg)) {
+			return StringArgumentMarshaler.getValue(marshaler);
+		} else {
+			return defaultValue;
+		}
+	}
+
 	public int getInt(char arg) throws ArgsException {
 		ArgumentMarshaler marshaler = getAndValidateMarshaler(arg, IntegerArgumentMarshaler.class);
 		return IntegerArgumentMarshaler.getValue(marshaler);
 	}
 
+	public int getIntOrDefault(char arg, int defaultValue) throws ArgsException {
+		ArgumentMarshaler marshaler = getAndValidateMarshaler(arg, IntegerArgumentMarshaler.class);
+		if (found(arg)) {
+			return IntegerArgumentMarshaler.getValue(marshaler);
+		} else {
+			return defaultValue;
+		}
+	}
+
 	public double getDouble(char arg) throws ArgsException {
 		ArgumentMarshaler marshaler = getAndValidateMarshaler(arg, DoubleArgumentMarshaler.class);
 		return DoubleArgumentMarshaler.getValue(marshaler);
+	}
+
+	public double getDoubleOrDefault(char arg, double defaultValue) throws ArgsException {
+		ArgumentMarshaler marshaler = getAndValidateMarshaler(arg, DoubleArgumentMarshaler.class);
+		if (found(arg)) {
+			return DoubleArgumentMarshaler.getValue(marshaler);
+		} else {
+			return defaultValue;
+		}
 	}
 
 	public String[] getStringArray(char arg) throws ArgsException {
